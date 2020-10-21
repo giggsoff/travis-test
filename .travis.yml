@@ -33,6 +33,9 @@ script:
   - cd eden
   - make build-tests
   - echo > tests/workflow/testdata/eden_stop.txt
-  - ./eden test tests/workflow -v debug
+  - ./eden setup
+  - ./eden start
+  - ./eden eve onboard
+  - EDEN_TEST=large ./eden test tests/workflow -v debug
 after_script:
   - ./eden log --format=json
