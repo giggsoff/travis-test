@@ -8,7 +8,6 @@ cache:
   directories:
     - $HOME/.cache/go-build
     - $HOME/gopath/pkg/mod
-    - $HOME/qemu-$QEMU_VERSION
 install:
   - sudo apt-get -yq --no-install-suggests --no-install-recommends install qemu-utils make curl telnet cpu-checker ninja-build
   - sudo modprobe kvm-intel nested=1
@@ -19,8 +18,8 @@ install:
   - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=$GO_VERSION bash)"
   - go version
   - sudo apt-get -yq build-dep qemu
-  - test -d qemu-$QEMU_VERSION || wget https://download.qemu.org/qemu-$QEMU_VERSION.tar.xz
-  - test -d qemu-$QEMU_VERSION || tar xvJf qemu-$QEMU_VERSION.tar.xz
+  - wget https://download.qemu.org/qemu-$QEMU_VERSION.tar.xz
+  - tar xvJf qemu-$QEMU_VERSION.tar.xz
   - cd qemu-$QEMU_VERSION
   - ./configure --target-list=x86_64-softmmu
   - make -j2
