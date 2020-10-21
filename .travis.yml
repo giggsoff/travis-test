@@ -1,16 +1,17 @@
 language: bash
-go:
-  - 1.15.3
 dist: bionic
 install:
-  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install qemu-system qemu-utils make curl telnet
+  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install qemu-system qemu-utils make curl telnet cpu-checker
   - sudo modprobe kvm-intel nested=1
   - sudo adduser $USER kvm
   - sudo chown $USER /dev/kvm
+  - kvm-ok
+  - free
+  - lscpu
   - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
   - go version
 script:
   - git clone https://github.com/lf-edge/eden.git --single-branch
-  - make -C eden build-tests
-  - cd eden; ./eden test tests/workflow -v debug
-  - cd eden; ./eden log --format=json
+  - make -C eden run
+  - cd eden; ./eden status
+  - cd eden; ./eden eve console
