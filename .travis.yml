@@ -2,7 +2,7 @@ language: bash
 dist: bionic
 env:
   global:
-    - QEMU_VERSION="4.1.0"
+    - QEMU_VERSION="4.2.1"
     - GO_VERSION="1.12"
 cache:
   directories:
