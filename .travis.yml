@@ -1,0 +1,13 @@
+language: bash
+# ignored on non-linux platforms, but bionic is required for nested virtualization
+dist: bionic
+
+stages:
+  - install
+
+install:
+  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm virtinst
+  - sudo adduser $USER libvirt
+  - sudo adduser $USER kvm
+  - sudo lscpu
+  - sudo kvm-ok
