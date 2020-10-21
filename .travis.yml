@@ -1,10 +1,14 @@
 language: bash
 dist: bionic
+env:
+  global:
+    - QEMU_VERSION="4.1.0"
+    - GO_VERSION="1.12"
 cache:
   directories:
     - $HOME/.cache/go-build
     - $HOME/gopath/pkg/mod
-    - $HOME/qemu-4.1.0
+    - $HOME/qemu-$QEMU_VERSION
 install:
   - sudo apt-get -yq --no-install-suggests --no-install-recommends install qemu-utils make curl telnet cpu-checker ninja-build
   - sudo modprobe kvm-intel nested=1
@@ -12,12 +16,12 @@ install:
   - kvm-ok
   - free
   - lscpu
-  - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
+  - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=$GO_VERSION bash)"
   - go version
   - sudo apt-get -yq build-dep qemu
-  - test -d qemu-4.1.0 || wget https://download.qemu.org/qemu-4.1.0.tar.xz
-  - test -d qemu-4.1.0 || tar xvJf qemu-4.1.0.tar.xz
-  - cd qemu-4.1.0
+  - test -d qemu-$QEMU_VERSION || wget https://download.qemu.org/qemu-$QEMU_VERSION.tar.xz
+  - test -d qemu-$QEMU_VERSION || tar xvJf qemu-$QEMU_VERSION.tar.xz
+  - cd qemu-$QEMU_VERSION
   - ./configure --target-list=x86_64-softmmu
   - make -j2
   - sudo make install
@@ -29,6 +33,7 @@ script:
   - git clone https://github.com/lf-edge/eden.git --single-branch
   - cd eden
   - make build-tests
+  - echo > tests/workflow/testdata/eden_stop.txt
   - ./eden test tests/workflow -v debug
 after_script:
   - ./eden log --format=json
