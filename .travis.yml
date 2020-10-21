@@ -1,13 +1,16 @@
 language: bash
-# ignored on non-linux platforms, but bionic is required for nested virtualization
+go:
+  - 1.15.3
 dist: bionic
-
-stages:
-  - install
-
 install:
-  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm virtinst
-  - sudo adduser $USER libvirt
+  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install qemu-system qemu-utils make curl telnet
+  - sudo modprobe kvm-intel nested=1
   - sudo adduser $USER kvm
-  - sudo lscpu
-  - sudo kvm-ok
+  - sudo chown $USER /dev/kvm
+  - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
+  - go version
+script:
+  - git clone https://github.com/lf-edge/eden.git --single-branch
+  - make -C eden build-tests
+  - cd eden; ./eden test tests/workflow -v debug
+  - cd eden; ./eden log --format=json
