@@ -1,7 +1,11 @@
 language: bash
 dist: bionic
+cache:
+  directories:
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
 install:
-  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install qemu-system qemu-utils make curl telnet cpu-checker
+  - sudo apt-get -yq --no-install-suggests --no-install-recommends install qemu-utils make curl telnet cpu-checker ninja-build
   - sudo modprobe kvm-intel nested=1
   - sudo adduser $USER kvm
   - sudo chown $USER /dev/kvm
@@ -10,8 +14,19 @@ install:
   - lscpu
   - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
   - go version
+  - sudo apt-get -yq build-dep qemu
+  - wget https://download.qemu.org/qemu-4.1.0.tar.xz
+  - tar xvJf qemu-4.1.0.tar.xz
+  - cd qemu-4.1.0
+  - ./configure --target-list=x86_64-softmmu
+  - make -j2
+  - sudo cp x86_64-softmmu/qemu-system-x86_64 /usr/local/bin/
+  - qemu-system-x86_64 --version
 script:
+  - docker pull itmoeve/eden-http-server:1.2
+  - docker tag itmoeve/eden-http-server:1.2 lfedge/eden-http-server:1.2
   - git clone https://github.com/lf-edge/eden.git --single-branch
-  - make -C eden run
-  - cd eden; ./eden status
-  - cd eden; ./eden eve console
+  - cd eden
+  - make run
+  - ./eden status
+  - sleep 5; cat dist/eve.log
