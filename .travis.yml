@@ -19,7 +19,7 @@ install:
   - go version
   - sudo apt-get -yq build-dep qemu
   - wget https://download.qemu.org/qemu-$QEMU_VERSION.tar.xz
-  - tar xvJf qemu-$QEMU_VERSION.tar.xz
+  - tar xJf qemu-$QEMU_VERSION.tar.xz
   - cd qemu-$QEMU_VERSION
   - ./configure --target-list=x86_64-softmmu
   - make -j2
