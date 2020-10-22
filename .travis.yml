@@ -36,16 +36,21 @@ install:
 script:
   - docker pull itmoeve/eden-http-server:1.2
   - docker tag itmoeve/eden-http-server:1.2 lfedge/eden-http-server:1.2
-  - git clone -b vnc-expand https://github.com/itmo-eve/eden.git --single-branch
+  - git clone https://github.com/lf-edge/eve.git --single-branch
+  - make -C eve HV=$HV pkgs
+  - make -C eve HV=$HV eve
+  - git clone https://github.com/lf-edge/eden.git --single-branch
   - cd eden
-  - make build
-  - ./eden config add default
-  - ./eden config set default --key=eve.hv --value=$HV
-  - ./eden config set default --key=eve.tag --value=0.0.0-snapshot-master-b7928b21
   - echo > tests/workflow/testdata/ssh.txt
   - echo > tests/workflow/testdata/eden_stop.txt
   - echo > tests/lim/testdata/info_test.txt
   - echo > tests/lim/testdata/metric_test.txt
+  - echo > tests/app/testdata/2dockers_test.txt
+  - echo > tests/workflow/testdata/reboot_eden.txt
+  - make build
+  - ./eden config add default
+  - ./eden config set default --key=eve.hv --value=$HV
+  - ./eden config set default --key=eve.tag --value=$(make -s -C ../eve version)
   - make build-tests
   - ./eden setup
   - ./eden start
