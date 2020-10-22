@@ -41,6 +41,7 @@ script:
   - make build
   - ./eden config add default
   - ./eden config set default --key=eve.hv --value=$HV
+  - ./eden config set default --key=eve.tag --value=0.0.0-snapshot-master-b7928b21
   - echo > tests/workflow/testdata/eden_stop.txt
   - make build-tests
   - ./eden setup
