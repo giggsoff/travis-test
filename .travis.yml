@@ -39,7 +39,7 @@ script:
   - git clone https://github.com/lf-edge/eve.git --single-branch
   - make -C eve HV=$HV pkgs
   - make -C eve HV=$HV eve
-  - git clone https://github.com/lf-edge/eden.git --single-branch
+  - git clone -b vnc-expand https://github.com/itmo-eve/eden.git --single-branch
   - cd eden
   - echo > tests/workflow/testdata/ssh.txt
   - echo > tests/workflow/testdata/eden_stop.txt
