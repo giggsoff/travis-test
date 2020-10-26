@@ -1,13 +1,57 @@
 language: bash
-# ignored on non-linux platforms, but bionic is required for nested virtualization
 dist: bionic
-
-stages:
-  - install
-
+env:
+  global:
+    - QEMU_VERSION="4.2.1"
+    - GO_VERSION="1.12"
+branches:
+  only:
+    - master
+cache:
+  directories:
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
+jobs:
+  include:
+    - env: HV=xen
+    - env: HV=kvm
 install:
-  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm virtinst
-  - sudo adduser $USER libvirt
-  - sudo adduser $USER kvm
-  - sudo lscpu
-  - sudo kvm-ok
+  - sudo apt-get -yq --no-install-suggests --no-install-recommends install qemu-utils make curl telnet cpu-checker ninja-build
+  - sudo modprobe kvm-intel nested=1
+  - sudo chown $USER /dev/kvm
+  - kvm-ok
+  - free
+  - lscpu
+  - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=$GO_VERSION bash)"
+  - go version
+  - sudo apt-get -yq build-dep qemu
+  - wget https://download.qemu.org/qemu-$QEMU_VERSION.tar.xz
+  - tar xJf qemu-$QEMU_VERSION.tar.xz
+  - cd qemu-$QEMU_VERSION
+  - ./configure --target-list=x86_64-softmmu
+  - make -j2
+  - sudo make install
+  - cd ..
+  - qemu-system-x86_64 --version
+script:
+  - docker pull itmoeve/eden-http-server:1.2
+  - docker tag itmoeve/eden-http-server:1.2 lfedge/eden-http-server:1.2
+  - git clone -b time-logger https://github.com/itmo-eve/eden.git --single-branch
+  - cd eden
+  - echo > tests/workflow/testdata/ssh.txt
+  - echo > tests/workflow/testdata/eden_stop.txt
+  - echo > tests/lim/testdata/info_test.txt
+  - echo > tests/lim/testdata/metric_test.txt
+  - echo > tests/app/testdata/2dockers_test.txt
+  - echo > tests/workflow/testdata/reboot_eden.txt
+  - make build
+  - ./eden config add default
+  - ./eden config set default --key=eve.hv --value=$HV
+  - ./eden config set default --key=eve.tag --value=0.0.0-snapshot-master-45bb0fb7
+  - make build-tests
+  - ./eden setup
+  - ./eden start
+  - ./eden eve onboard
+  - EDEN_TEST=large ./eden test tests/workflow -v debug
+after_script:
+  - ./eden log --format=json
